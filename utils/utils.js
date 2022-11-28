@@ -10,11 +10,33 @@ function exec(command, args, options) {
 
 function isEmptyDir () {
     const localPath = process.cwd() 
+    console.log('process.cwd', localPath)
 	const fileList = fs.readdirSync(localPath)
 	return !fileList.length
 }
 
+function isObject(o){
+    return Object.prototype.toString.call(o) === '[object Object]'
+}
+
+// 命令行loading
+function spinnerStart(msg, spinnerString = '|/-\\'){
+    const Spinner = require('cli-spinner').Spinner;
+    const spinner = new Spinner(msg + " %s ")
+    spinner.setSpinnerString(spinnerString)
+    spinner.start()
+    return spinner
+}
+
+// 手动等待
+function sleep(timeout = 1000) {
+    return new Promise(resolve => setTimeout(resolve, timeout))
+}
+
 module.exports = {
     exec,
-    isEmptyDir
+    isEmptyDir,
+    isObject,
+    sleep,
+    spinnerStart
 }

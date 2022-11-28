@@ -1,6 +1,6 @@
-const init = require('./init')
+const create = require('./create')
 const publish = require('./publish')
 module.exports = {
-    init, 
+    create, 
     publish
 }
