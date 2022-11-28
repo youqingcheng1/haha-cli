@@ -5,76 +5,98 @@ const fse = require('fs-extra')
 const { isEmptyDir } = require('../utils/utils')
 const axios = require('axios')
 
-
-async function init(){
-    // npm上的模板包列表
-    this.npmList = []
-    // 当前选择的项目模板名称
-    this.currentTtemplateName = ''
-
-    try{
-        // 准备阶段
-		await prepare()
-        await downloadTemplate()
-
-    }catch(e){
-        console.log(e)
+class CommandInit {
+    constructor(){
+        //npm上的模板包列表
+        this.npmList = []
+        //当前选择的项目模板名称
+        this.currentTtemplateName = '' 
     }
-}
-
-
-async function prepare(){
-    // 当前目录是否为空
-    const isEmpty = isEmptyDir()
-    let isContinue = false
-    if (!isEmpty) {
-        isContinue = (
-            await inquirer.prompt([
-                {
-                    type: 'confirm',
-                    name: 'isContinue',
-                    default: false,
-                    message: '当前文件夹不为空，是否继续创建项目？'
-                }
-            ])).isContinue
-        if (!isContinue) {
-            process.exit(1)
+    async start (){
+        try{
+            // 准备阶段
+            await this.prepare()
+            await this.downloadTemplate()
+        }catch(e){
+            console.log(e)
         }
-        if (isContinue) {
-            const { isClear } = await inquirer.prompt([
+    } 
+    
+    async prepare(){
+        // 当前目录是否为空
+        const isEmpty = isEmptyDir()
+        let isContinue = false
+        if (!isEmpty) {
+            isContinue = (
+                await inquirer.prompt([
                     {
                         type: 'confirm',
-                        name: 'isClear',
+                        name: 'isContinue',
                         default: false,
-                        message: '是否清空文件夹？'
+                        message: '当前文件夹不为空，是否继续创建项目？'
                     }
-                ])
-                if (isClear) {
-                    fse.emptyDirSync(process.cwd())
-                }
+                ])).isContinue
+            if (!isContinue) {
+                process.exit(1)
+            }
+            if (isContinue) {
+                const { isClear } = await inquirer.prompt([
+                        {
+                            type: 'confirm',
+                            name: 'isClear',
+                            default: false,
+                            message: '是否清空文件夹？'
+                        }
+                    ])
+                    if (isClear) {
+                        fse.emptyDirSync(process.cwd())
+                    }
+            }
         }
+        this.getAllTemplate()
     }
-    getAllTemplate()
+    
+    //选择模板
+    async getAllTemplate(){
+        const { data } = await axios.get('http://10.0.0.208:4873/-/verdaccio/data/packages')
+        this.npmList = data || []
+        const templateALl = this.npmList.map(r => ({name:r.name, value:r.name})).filter(e => /^\@template/.test(e.name))
+        const { templateName } = await inquirer.prompt([
+            {
+                type: 'list',
+                message: '请选择项目模板',
+                name: 'templateName',
+                default: templateALl[0].value,
+                choices: templateALl
+            }
+        ])
+        this.currentTtemplateName = templateName
+    }
+    
+    //初始化项目
+    async iniProject() {
+        const validName = (e) => /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(e)
+        const promptList = [{
+            type: 'input',
+            name: 'projectDesc',
+            message: '请输入项目描述',
+            validate: function(e){
+                const done = this.async()
+                setTimeout(()=>{
+                    if(!e) {
+                        done('请输入项目描述')
+                        return
+                    }
+                    return done(null, true)
+                })
+            }
+        }]
+        // 判断项目名称是否合法
+        // if(!validName(this.projectInfo.dirName))
+    }
+    
+    // 下载模板
+    async downloadTemplate (){}
 }
 
-// 选择模板
-async function getAllTemplate(){
-    const { data } = await axios.get('http://10.0.0.208:4873/-/verdaccio/data/packages')
-    this.npmList = data || []
-    const templateALl = this.npmList.map(r => ({name:r.name, value:r.name})).filter(e => /^\@template/.test(e.name))
-    const { templateName } = await inquirer.prompt([
-        {
-            type: 'list',
-            message: '请选择项目模板',
-            name: 'templateName',
-            default: templateALl[0].value,
-            choices: templateALl
-        }
-    ])
-    this.currentTtemplateName = templateName
-}
-
-// 下载模板
-async function downloadTemplate (){}
-
-module.exports = init
+module.exports = new CommandInit()
