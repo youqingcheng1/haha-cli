@@ -40,14 +40,16 @@ class Package {
   //package 准备工作
   async prepare(){
     if(this.storePath && !pathExists(this.storePath)){
+      // 创建存储目录
       fse.mkdirpSync(this.storePath)
     }
+    // 获取最新版本号
     if(this.pkgVersion === 'latest'){
       this.pkgVersion = await getLatestVersion(this.pkgName)
     }
   }
 
-  // 判断Package是否存在
+  // 判断模板是否存在
   async exists(){
     if(this.storePath){
       await this.prepare()

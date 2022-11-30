@@ -5,7 +5,9 @@ specifiers:
   cli-spinner: ^0.2.10
   colors: ^1.4.0
   commander: ^9.4.1
+  ejs: ^3.1.8
   fs-extra: ^10.1.0
+  glob: ^8.0.3
   inquirer: 8.2.0
   npminstall: ^6.6.1
   npmlog: ^6.0.2
@@ -19,7 +21,9 @@ dependencies:
   cli-spinner: 0.2.10
   colors: 1.4.0
   commander: 9.4.1
+  ejs: 3.1.8
   fs-extra: 10.1.0
+  glob: 8.0.3
   inquirer: 8.2.0
   npminstall: 6.6.1
   npmlog: 6.0.2
@@ -179,6 +183,10 @@ packages:
     dependencies:
       delegates: 1.0.0
       readable-stream: 3.6.0
+    dev: false
+
+  /async/3.2.4:
+    resolution: {integrity: sha512-iAB+JbDEGXhyIUavoDl9WP/Jj106Kz9DEn1DPgYw5ruDn0e3Wgi3sKFm55sASdGBNOQB8F59d9qQ7deqrHA8wQ==}
     dev: false
 
   /await-event/2.1.0:
@@ -496,6 +504,14 @@ packages:
       utility: 1.17.0
     dev: false
 
+  /ejs/3.1.8:
+    resolution: {integrity: sha512-/sXZeMlhS0ArkfX2Aw780gJzXSMPnKjtspYZv+f3NiKLlubezAHDU5+9xz6gd3/NhG3txQCo6xlglmTS+oTGEQ==}
+    engines: {node: '>=0.10.0'}
+    hasBin: true
+    dependencies:
+      jake: 10.8.5
+    dev: false
+
   /emoji-regex/8.0.0:
     resolution: {integrity: sha1-6Bj9ac5cz8tARZT4QpY79TFkzDc=}
     dev: false
@@ -553,6 +569,12 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       escape-string-regexp: 1.0.5
+    dev: false
+
+  /filelist/1.0.4:
+    resolution: {integrity: sha512-w1cEuf3S+DrLCQL7ET6kz+gmlJdbq9J7yXCSjK/OZCPA+qEN1WyF4ZAf0YYJa4/shHJra2t/d/r8SV4Ji+x+8Q==}
+    dependencies:
+      minimatch: 5.1.0
     dev: false
 
   /follow-redirects/1.15.2:
@@ -853,6 +875,17 @@ packages:
 
   /isstream/0.1.2:
     resolution: {integrity: sha1-R+Y/evVa+m+S4VAOaQ64uFKcCZo=}
+    dev: false
+
+  /jake/10.8.5:
+    resolution: {integrity: sha512-sVpxYeuAhWt0OTWITwT98oyV0GsXyMlXCF+3L1SuafBVUIr/uILGRB+NqwkzhgXKvoJpDIpQvqkUALgdmQsQxw==}
+    engines: {node: '>=10'}
+    hasBin: true
+    dependencies:
+      async: 3.2.4
+      chalk: 4.1.2
+      filelist: 1.0.4
+      minimatch: 3.1.2
     dev: false
 
   /json-parse-even-better-errors/2.3.1:
