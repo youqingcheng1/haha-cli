@@ -4,17 +4,12 @@ const axios = require('axios')
 const urlJoin = require('url-join')
 // npm 的语义版本器
 const semver = require('semver')
-
-// 获取默认的镜像地址
-function getDefaultNpmRegistry (registry) {
-  return registry ? registry : 'https://registry.npm.taobao.org'
-}
+const { CLI_NPM_API_PAKDATA } = global
 
 // 获取npm 信息
-async function getNpmInfo(npmName, registry = 'http://10.0.0.208:4873/-/verdaccio/data/sidebar/') {
+async function getNpmInfo(npmName) {
   if (!npmName) return null
-  const baseUrl = getDefaultNpmRegistry(registry)
-  const fullPath = urlJoin(baseUrl, npmName)
+  const fullPath = urlJoin(CLI_NPM_API_PAKDATA, npmName)
   return axios.get(fullPath).then(res => {
     if (res.status === 200) {
       return res.data
@@ -26,10 +21,9 @@ async function getNpmInfo(npmName, registry = 'http://10.0.0.208:4873/-/verdacci
 }
 
 // 获取版本信息
-async function getNpmVersion(baseVersion, npmName, registry = 'http://10.0.0.208:4873/-/verdaccio/data/sidebar') {
-  registry = getDefaultNpmRegistry(registry)
+async function getNpmVersion(baseVersion, npmName) {
   try {
-    const data = await getNpmInfo(npmName, registry)
+    const data = await getNpmInfo(npmName)
     if (data && data.versions) {
       return getSemverVersions(baseVersion, Object.keys(data.versions))
     } else {
@@ -59,8 +53,8 @@ function getSemverVersions (baseVersion, versions) {
 }
 
 // 获取最新版本
-async function getLatestVersion (npmName, registry = 'http://10.0.0.208:4873/-/verdaccio/data/sidebar') {
-  const data = await getNpmInfo(npmName, registry)
+async function getLatestVersion (npmName) {
+  const data = await getNpmInfo(npmName)
   let versions = data.versions || {}
   versions = Object.keys(versions)
   if (versions) {
@@ -78,6 +72,5 @@ async function getLatestVersion (npmName, registry = 'http://10.0.0.208:4873/-/v
 
 module.exports = {
   getNpmVersion,
-  getLatestVersion,
-  getDefaultNpmRegistry
+  getLatestVersion
 }

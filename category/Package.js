@@ -3,8 +3,9 @@ const { isObject } = require('../utils/utils')
 const path = require('path');
 const pathExists = require('path-exists').sync
 const fse = require('fs-extra')
-const { getLatestVersion, getDefaultNpmRegistry } = require('../utils/npm-info')
+const { getLatestVersion } = require('../utils/npm-info')
 const npmInstall = require('npminstall')
+const { CLI_NPM_REGISTRY } = global
 
 class Package {
   constructor (options){
@@ -62,25 +63,30 @@ class Package {
   // 安装包
   async install(){
     await this.prepare()
-    return npmInstall({
+    await npmInstall({
       root: this.targerPath,
       storeDir: this.storePath,
-      registry: getDefaultNpmRegistry('http://10.0.0.208:4873'),
-      pkgs: [
-        {
-          name: this.pkgName,
-          version: this.pkgVersion
-        }
+      registry: CLI_NPM_REGISTRY,
+      pkgs: [{name: this.pkgName,version: this.pkgVersion}
       ]
     })
   }
 
   // 更新包
-  async update (){
+  async update(){
     await this.prepare()
     // 获取依赖包最新版本号
     const latestVersion = await getLatestVersion(this.pkgName)
-    const latestFilePath = this.getSpecificCacheFilePath(latestVersion)
+		// 拼接最新的依赖包缓存文件路径
+		const latestFilePath = this.getSpecificCacheFilePath(latestVersion)
+    if(!pathExists(latestFilePath)){
+      await npmInstall({
+        root: this.targerPath,
+        storePath: this.storePath,
+        registry: CLI_NPM_REGISTRY,
+        pkgs: [{name:this.pkgName, version: latestVersion}]
+      })
+    }
   }
 }
 

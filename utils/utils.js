@@ -10,7 +10,6 @@ function exec(command, args, options) {
 
 function isEmptyDir () {
     const localPath = process.cwd() 
-    console.log('process.cwd', localPath)
 	const fileList = fs.readdirSync(localPath)
 	return !fileList.length
 }

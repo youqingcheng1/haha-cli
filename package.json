@@ -21,11 +21,11 @@
     "fs-extra": "^10.1.0",
     "glob": "^8.0.3",
     "inquirer": "8.2.0",
-    "npminstall": "^6.6.1",
+    "npminstall": "5.4.1",
     "npmlog": "^6.0.2",
     "path-exists": "4.0.0",
     "semver": "^7.3.8",
     "url-join": "4.0.1",
-    "user-home": "^3.0.0"
+    "user-home": "3.0.0"
   }
 }

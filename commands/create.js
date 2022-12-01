@@ -12,6 +12,7 @@ const Package = require('../category/Package')
 const glob = require('glob')
 // 嵌入式 JavaScript 模板
 const ejs = require('ejs');
+const { CLI_STORE_PKGNAME } = global
 
 class CreateCommand extends Command {
     init(){
@@ -23,7 +24,9 @@ class CreateCommand extends Command {
         this.projectInfo = {
             dirName: this._argv[0],
             projectName: this._argv[0]
-        }
+        },
+        // 用户选择的模板包基本信息
+		this.packageInfo = {}
     }
     // 执行开始
     async exec (){
@@ -37,7 +40,7 @@ class CreateCommand extends Command {
             // 将下载的项目模板copy到当前项目目录
             await this.templateMove()
         }catch(e){
-            console.log(e)
+            log.error(e)
         }
     } 
     
@@ -78,9 +81,10 @@ class CreateCommand extends Command {
     
     //选择模板
     async getAllTemplate(){
-        const { data } = await axios.get('http://10.0.0.208:4873/-/verdaccio/data/packages')
+        const { data } = await axios.get(CLI_NPM_API_PKGLIST)
         this.npmList = data || []
-        const templateALl = this.npmList.map(r => ({name:r.name, value:r.name})).filter(e => /^\@template/.test(e.name))
+        const reg = new RegExp('^' + CLI_STORE_PKGNAME + '')
+        const templateALl = this.npmList.map(r => ({name:r.name, value:r.name})).filter(e => reg.test(e.name))
         const { templateName } = await inquirer.prompt([
             {
                 type: 'list',
@@ -97,6 +101,18 @@ class CreateCommand extends Command {
     async iniProject() {
         const validName = (e) => /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/.test(e)
         // 判断项目名称是否合法
+        const promptList = [{
+            type: 'input',
+            name: 'projectDesc',
+            message: '请输入项目描述',
+            validate: function(e){
+                const done = this.async()
+                setTimeout(()=>{
+                    if(!e) { done('请输入项目描述'); return}
+                    return done(null, true)
+                })
+            }
+        }]
         if(!validName(this.projectInfo.dirName) || !this.projectInfo.dirName){
             promptList.unshift({
                 type: 'input',
@@ -112,18 +128,6 @@ class CreateCommand extends Command {
                 }
             })
         }
-        const promptList = [{
-            type: 'input',
-            name: 'projectDesc',
-            message: '请输入项目描述',
-            validate: function(e){
-                const done = this.async()
-                setTimeout(()=>{
-                    if(!e) { done('请输入项目描述'); return}
-                    return done(null, true)
-                })
-            }
-        }]
 
         //初始化项目信息
         const { dirName, projectDesc } = await inquirer.prompt(promptList)
@@ -148,7 +152,7 @@ class CreateCommand extends Command {
 			pkgName: templateName,
 			pkgVersion: version
         })
-        console.log('----templatePack',templatePack)
+        console.log('----templateInfo',templatePack)
         if(!await templatePack.exists()){
             const spinner = spinnerStart('正在下载模板...')
             await sleep()
@@ -161,12 +165,25 @@ class CreateCommand extends Command {
                 if(await templatePack.exists()){
                     console.log('\n')
 					log.success('下载成功')
-					this.packageInfo = templatePack
                 }
             }
         } else {
-
+            const spinner = spinnerStart('正在更新模板...')
+            await sleep()
+            try{
+                await templatePack.update()
+            }catch(error){
+                throw error
+            } finally {
+                spinner.stop()
+                if(await templatePack.exists()){
+                    console.log('\n')
+                    log.success('更新成功')
+                }
+            }
         }
+
+        this.packageInfo = templatePack
     }
 
     // copy 模板到指定项目
@@ -179,7 +196,7 @@ class CreateCommand extends Command {
         fse.ensureDirSync(projectPath)
         fse.copySync(templatePath, projectPath)
         spinner.stop(true)
-        console.log('projectInfo',this.projectInfo)
+        console.log('---projectInfo',this.projectInfo)
         await this.ejsRender(projectPath)
         log.success('模板安装完成')
     }
@@ -214,8 +231,8 @@ class CreateCommand extends Command {
         let fileName = path.basename(filePath)
         // path.extname 返回path路径文件扩展名 file.html =>.html
         const extName = path.extname(fileName)
-        let excloudFile = ['.vue', '.js', '.html', '.json']
-        if(excloudFile.includes(extName) === -1) return Promise.resolve()
+        let excloudFile = ['.js', '.json']
+        if(!excloudFile.includes(extName)) return Promise.resolve()
         return new Promise((resolve, reject) => {
             ejs.renderFile(filePath, options, (err, result)=>{
                 if(err) return reject(err)
@@ -283,4 +300,3 @@ function create(){
 }
 
 module.exports = create
-module.exports.CreateCommand = CreateCommand
