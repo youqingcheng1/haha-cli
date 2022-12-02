@@ -36,30 +36,23 @@ function sleep(timeout = 1000) {
 }
 
 // 删除文件夹
-function rmDir(path) {
-    new Promise(async (resolve) => {
-      if (fs.existsSync(path)) {
-        const dirs = [path];
-        const files = await fs.readdirSync(path);
-        files.forEach(async (file) => {
-          const childPath = path + "/" + file;
-        //   console.log(childPath)
-          if (fs.statSync(childPath).isDirectory()) {
-            dirs.push(childPath);
-            await rmDir(childPath);
+function delDir(path){
+  let files = [];
+  if(fs.existsSync(path)){
+      files = fs.readdirSync(path);
+      files.forEach((file, index) => {
+          let curPath = path + "/" + file;
+          //判断是否是文件夹
+          if(fs.statSync(curPath).isDirectory()){
+              delDir(curPath); //递归删除文件夹
           } else {
-            await fs.unlinkSync(childPath);
+              //文件的话，直接删除
+              fs.unlinkSync(curPath); //删除文件
           }
-        });
-
-        console.log(dirs)
-  
-        dirs.forEach((fir) => fs.rmdirSync(fir));
-  
-        resolve();
-      }
-    });
+      });
+      fs.rmdirSync(path);
   }
+}
 
 module.exports = {
     exec,
@@ -67,5 +60,5 @@ module.exports = {
     isObject,
     sleep,
     spinnerStart,
-    rmDir
+    delDir
 }

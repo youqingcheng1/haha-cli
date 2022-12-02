@@ -27,8 +27,5 @@
     "semver": "^7.3.8",
     "url-join": "4.0.1",
     "user-home": "3.0.0"
-  },
-  "devDependencies": {
-    "rimraf": "^3.0.2"
   }
 }
