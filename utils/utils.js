@@ -40,7 +40,7 @@ function delDir(path){
   let files = [];
   if(fs.existsSync(path)){
       files = fs.readdirSync(path);
-      files.forEach((file, index) => {
+      files.forEach((file) => {
           let curPath = path + "/" + file;
           //判断是否是文件夹
           if(fs.statSync(curPath).isDirectory()){
